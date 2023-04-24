@@ -79,7 +79,7 @@ def test_misannotated_base_tool_raises_error() -> None:
         class _MisAnnotatedTool(BaseTool):
             name = "structured_api"
             # This would silently be ignored without the custom metaclass
-            args_schema: BaseModel = _MockSchema
+            args_schema: BaseModel = _MockSchema  # type: ignore
             description = "A Structured Tool"
 
             def _run(self, arg1: int, arg2: bool, arg3: Optional[dict] = None) -> str:
