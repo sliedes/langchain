@@ -5,6 +5,7 @@ from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.pandas.prompt import PREFIX, SUFFIX
 from langchain.agents.mrkl.base import ZeroShotAgent
 from langchain.base_language import BaseLanguageModel
+from langchain.callbacks import get_callback_manager
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.chains.llm import LLMChain
 from langchain.tools.python.tool import PythonAstREPLTool
@@ -38,7 +39,16 @@ def create_pandas_dataframe_agent(
 
     if input_variables is None:
         input_variables = ["df", "input", "agent_scratchpad"]
-    tools = [PythonAstREPLTool(locals={"df": df})]
+
+    if callback_manager is None:
+        callback_manager = get_callback_manager()
+
+    tools = [
+        PythonAstREPLTool(
+            locals={"df": df},
+            callback_manager=callback_manager,
+        )
+    ]
     prompt = ZeroShotAgent.create_prompt(
         tools, prefix=prefix, suffix=suffix, input_variables=input_variables
     )
