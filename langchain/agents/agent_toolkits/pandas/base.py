@@ -5,7 +5,6 @@ from langchain.agents.agent import AgentExecutor
 from langchain.agents.agent_toolkits.pandas.prompt import PREFIX, SUFFIX
 from langchain.agents.mrkl.base import ZeroShotAgent
 from langchain.base_language import BaseLanguageModel
-from langchain.callbacks import get_callback_manager
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.chains.llm import LLMChain
 from langchain.tools.python.tool import PythonAstREPLTool
@@ -24,7 +23,7 @@ def create_pandas_dataframe_agent(
     max_execution_time: Optional[float] = None,
     early_stopping_method: str = "force",
     agent_executor_kwargs: Optional[Dict[str, Any]] = None,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ) -> AgentExecutor:
     """Construct a pandas agent from an LLM and dataframe."""
     try:
@@ -40,13 +39,11 @@ def create_pandas_dataframe_agent(
     if input_variables is None:
         input_variables = ["df", "input", "agent_scratchpad"]
 
-    if callback_manager is None:
-        callback_manager = get_callback_manager()
-
     tools = [
         PythonAstREPLTool(
             locals={"df": df},
             callback_manager=callback_manager,
+            allow_blocking_async=True,
         )
     ]
     prompt = ZeroShotAgent.create_prompt(

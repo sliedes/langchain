@@ -32,6 +32,11 @@ class PythonREPLTool(BaseTool):
     python_repl: PythonREPL = Field(default_factory=_get_default_python_repl)
     sanitize_input: bool = True
 
+    # Without this, _arun will raise NotImplementedError.
+    # If you are sure enough that the execution is fast, you can set this to True.
+    # Then _arun() will merely delegate to the synchronous _run() method.
+    allow_blocking_async: bool = False
+
     def _run(
         self,
         query: str,
@@ -48,7 +53,9 @@ class PythonREPLTool(BaseTool):
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> Any:
         """Use the tool asynchronously."""
-        raise NotImplementedError("PythonReplTool does not support async")
+        if not self.allow_blocking_async:
+            raise NotImplementedError("PythonREPLTool does not support async")
+        return self._run(query)
 
 
 class PythonAstREPLTool(BaseTool):
@@ -64,6 +71,11 @@ class PythonAstREPLTool(BaseTool):
     globals: Optional[Dict] = Field(default_factory=dict)
     locals: Optional[Dict] = Field(default_factory=dict)
     sanitize_input: bool = True
+
+    # Without this, _arun will raise NotImplementedError.
+    # If you are sure enough that the execution is fast, you can set this to True.
+    # Then _arun() will merely delegate to the synchronous _run() method.
+    allow_blocking_async: bool = False
 
     @root_validator(pre=True)
     def validate_python_version(cls, values: Dict) -> Dict:
@@ -113,4 +125,6 @@ class PythonAstREPLTool(BaseTool):
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
     ) -> str:
         """Use the tool asynchronously."""
-        raise NotImplementedError("PythonReplTool does not support async")
+        if not self.allow_blocking_async:
+            raise NotImplementedError("PythonAstREPLTool does not support async")
+        return self._run(query)
